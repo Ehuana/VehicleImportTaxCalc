@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Unofficial Cambodia vehicle import tax estimate calculator with bilingual support (English and Khmer).">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';">
+  <title>Vehicle Import Tax Calculator - Cambodia</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Khmer:wght@400;500;600;700&family=Noto+Serif+JP:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <main class="container page-wrap py-4 py-md-5">
+    <header class="text-center mb-4 mb-md-5">
+      <p class="eyebrow" id="eyebrowText"></p>
+      <h1 class="mb-2" id="mainTitle"></h1>
+      <p class="subtitle" id="subtitleText"></p>
+
+      <div class="control-row d-flex flex-column flex-sm-row justify-content-center align-items-center gap-2 mt-3">
+        <button type="button" id="themeToggleBtn" class="btn btn-outline-glass theme-toggle-btn px-3">
+          <i id="themeIcon" class="fa-solid fa-moon me-2"></i>
+          <span id="themeToggleText">Dark Mode</span>
+        </button>
+
+        <div class="language-shell">
+          <i class="fa-solid fa-language"></i>
+          <label for="languageSelect" id="languageLabel">Language</label>
+          <select id="languageSelect" class="form-select form-select-sm glass-input language-select" aria-labelledby="languageLabel">
+            <option value="en">English</option>
+            <option value="km">ខ្មែរ</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="termsStatusCard" class="terms-status pending mt-3" role="status" aria-live="polite">
+        <div class="terms-status-main">
+          <div class="terms-status-headline-wrap">
+            <i id="termsStatusIcon" class="fa-solid fa-shield-halved"></i>
+            <span id="termsStatusTitle">Terms of Use</span>
+          </div>
+          <p id="termsStatusText" class="mb-0">Not agreed yet.</p>
+        </div>
+        <div class="terms-status-actions">
+          <button type="button" id="reviewTermsBtn" class="btn btn-outline-glass btn-sm px-3">Review Terms</button>
+          <a id="viewTermsLink" class="btn btn-outline-glass btn-sm px-3" href="terms.html">View Full Terms</a>
+        </div>
+      </div>
+    </header>
+
+    <section id="accessBlockedCard" class="glass-card p-3 p-md-4 mb-4 d-none" aria-live="polite">
+      <h2 class="h5 mb-2" id="accessBlockedTitle">Calculator Locked</h2>
+      <p class="mb-3" id="accessBlockedText">You must agree to the Terms of Use before using this calculator.</p>
+      <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center">
+        <button type="button" id="agreeFromLockBtn" class="btn btn-glass px-4">Review and Agree</button>
+        <a href="terms.html" id="openTermsPageBtn" class="btn btn-outline-glass px-4">Open Terms Page</a>
+      </div>
+    </section>
+
+    <section class="glass-card p-3 p-md-4 mb-4 requires-terms" aria-label="Tax input form">
+      <form id="taxForm" novalidate>
+        <div class="row g-3 g-md-4">
+          <div class="col-12 col-lg-6">
+            <label for="vehicleType" class="form-label d-inline-flex align-items-center gap-2">
+              <span id="vehicleTypeLabel">Vehicle Type</span>
+              <i class="fa-solid fa-circle-info info-icon" data-bs-toggle="tooltip" data-bs-placement="top"
+                data-tooltip-key="vehicleTooltip"
+                title="Select the category of imported vehicle. The HS code and tax rates are applied automatically."></i>
+            </label>
+            <select class="form-select glass-input" id="vehicleType" required></select>
+            <div class="invalid-feedback" id="vehicleInvalidMsg">Please select a vehicle type.</div>
+          </div>
+
+          <div class="col-12 col-lg-6">
+            <label for="cifUsd" class="form-label d-inline-flex align-items-center gap-2">
+              <span id="cifValueLabel">CIF Value (USD)</span>
+              <i class="fa-solid fa-circle-info info-icon" data-bs-toggle="tooltip" data-bs-placement="top"
+                data-tooltip-key="cifTooltip"
+                title="CIF means Cost, Insurance, and Freight. Enter the declared import value in USD."></i>
+            </label>
+            <div class="input-group">
+              <span class="input-group-text glass-prefix">USD</span>
+              <input type="number" class="form-control glass-input" id="cifUsd" min="0.01" step="0.01"
+                placeholder="e.g. 25000" required>
+              <div class="invalid-feedback w-100" id="cifInvalidMsg">Please enter a valid CIF amount greater than zero.</div>
+            </div>
+            <div class="conversion-note mt-2">
+              <span id="liveConversionLabel">Live conversion at 1 USD = 4,000 KHR:</span>
+              <strong id="cifKhrLive">KHR 0</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-center mt-4">
+          <button type="submit" class="btn btn-glass px-4 px-md-5">
+            <i class="fa-solid fa-calculator me-2"></i>
+            <span id="calculateTaxText">Calculate Tax</span>
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <section id="resultCard" class="glass-card p-3 p-md-4 mb-4 d-none requires-terms" aria-live="polite" aria-label="Tax results">
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
+        <h2 class="h4 mb-0" id="taxBreakdownTitle">Tax Breakdown</h2>
+        <div id="selectedRateInfo" class="rate-badge">HS - | CD 0% | ST 0% | VAT 10%</div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-borderless align-middle result-table">
+          <thead>
+            <tr>
+              <th scope="col" id="componentHeader">Component</th>
+              <th scope="col" class="text-end" id="usdHeader">USD</th>
+              <th scope="col" class="text-end" id="khrHeader">KHR</th>
+            </tr>
+          </thead>
+          <tbody id="resultRows"></tbody>
+        </table>
+      </div>
+
+      <p class="formula-note mb-0" id="formulaNote">
+        Formula: CD = CIF x CD%, ST = (CIF + CD) x ST%, VAT = (CIF + CD + ST) x VAT%.
+      </p>
+    </section>
+
+    <section class="glass-card p-3 p-md-4 mb-4 requires-terms" aria-label="Tax rate reference table">
+      <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap">
+        <h2 class="h5 mb-0" id="referenceTitle">Full Tax Rate Reference (2026)</h2>
+        <button class="btn btn-outline-glass" type="button" data-bs-toggle="collapse" data-bs-target="#rateTableCollapse"
+          aria-expanded="false" aria-controls="rateTableCollapse" id="toggleRateTableBtn">
+          Show or Hide Table
+        </button>
+      </div>
+
+      <div class="collapse mt-3" id="rateTableCollapse">
+        <div class="table-responsive">
+          <table class="table table-sm align-middle reference-table">
+            <thead>
+              <tr>
+                <th scope="col" id="rateHeadVehicle">Vehicle Type</th>
+                <th scope="col" id="rateHeadHs">HS Code</th>
+                <th scope="col" class="text-end" id="rateHeadCd">CD</th>
+                <th scope="col" class="text-end" id="rateHeadSt">ST</th>
+                <th scope="col" class="text-end" id="rateHeadVat">VAT</th>
+              </tr>
+            </thead>
+            <tbody id="rateTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <footer class="text-center pb-1">
+      <p class="footer-note mb-1" id="footerNote">Estimated values based on 2026 Customs Tariff and Sub-Decree 52.</p>
+      <p class="credit-line mb-0" id="creditLine">
+        <span id="creditPrefix">Created by an independent developer. GitHub:</span>
+        <a id="githubCreditLink" href="https://github.com/Ehuana" target="_blank" rel="me noopener noreferrer">@Ehuana</a>
+      </p>
+    </footer>
+  </main>
+
+  <div class="modal fade terms-modal" id="termsConsentModal" tabindex="-1" aria-labelledby="termsModalTitle"
+    aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-1 d-flex flex-wrap justify-content-between gap-2">
+          <h2 class="modal-title h5 mb-0" id="termsModalTitle">Important Notice Before Use</h2>
+          <div class="terms-modal-language-wrap">
+            <span id="termsModalLanguageLabel" class="terms-modal-language-label">Language</span>
+            <div class="btn-group btn-group-sm" role="group" aria-labelledby="termsModalLanguageLabel">
+              <button type="button" id="termsLangBtnEn" class="btn btn-outline-glass terms-lang-btn" data-lang="en"
+                aria-pressed="false">EN</button>
+              <button type="button" id="termsLangBtnKm" class="btn btn-outline-glass terms-lang-btn" data-lang="km"
+                aria-pressed="false">ខ្មែរ</button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-body pt-2">
+          <p id="termsModalIntro" class="mb-2">This calculator provides estimates for informational purposes only.</p>
+          <ul class="terms-point-list mb-3">
+            <li id="termsPointAccuracy">Tax rules, rates, and assumptions can change without notice.</li>
+            <li id="termsPointPolicy">Always verify final payable amounts with official Cambodia Customs sources.</li>
+            <li id="termsPointLiability">By continuing, you accept that the creator is not liable for losses from reliance on these estimates.</li>
+          </ul>
+          <p class="terms-version mb-0" id="termsVersionText">Terms version: 2026-04-11-v1</p>
+        </div>
+        <div class="modal-footer border-0 pt-0 d-flex flex-wrap justify-content-end gap-2">
+          <a href="terms.html" id="readFullTermsBtn" class="btn btn-outline-glass px-3">Read Full Terms</a>
+          <button type="button" id="declineTermsBtn" class="btn btn-outline-glass px-3">Do Not Agree</button>
+          <button type="button" id="agreeTermsBtn" class="btn btn-glass px-4">I Agree and Continue</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+  <script defer src="script.js"></script>
+</body>
+</html>
