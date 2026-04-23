@@ -2,7 +2,7 @@
 
 # Vehicle Import Tax Calculator (Cambodia)
 
-Unofficial bilingual web app (EN/KM) for estimating Cambodia vehicle import taxes.
+Unofficial bilingual web app (EN/KH) for estimating Cambodia vehicle import taxes.
 
 [![HTML5](https://img.shields.io/badge/HTML5-Ready-E34F26?logo=html5&logoColor=white)](index.html)
 [![CSS3](https://img.shields.io/badge/CSS3-Glassmorphism-1572B6?logo=css3&logoColor=white)](style.css)
@@ -128,8 +128,8 @@ No build step is required.
 
 ## Release Checklist
 
-- [x] Main calculator translations (EN/KM)
-- [x] Terms modal translations (EN/KM)
+- [x] Main calculator translations (EN/KH)
+- [x] Terms modal translations (EN/KH)
 - [x] Terms gating and persisted consent
 - [x] Dark/Light theme support
 - [x] Security headers and link safety
