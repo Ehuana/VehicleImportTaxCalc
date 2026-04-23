@@ -12,7 +12,25 @@ desktop.ini
 # Logs
 *.log
 
+# Secrets / local env
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.p12
+credentials.json
+secrets*.json
+
 # Temporary files
 *.tmp
 *.temp
 ~$*
+
+# Runtime / build artifacts (in case added later)
+node_modules/
+dist/
+build/
+.cache/
+.parcel-cache/

@@ -1,46 +1,12 @@
 "use strict";
 
 const EXCHANGE_RATE = 4000;
-const TERMS_VERSION = "2026-04-11-v1";
+const CORE = window.VIT_CORE;
+if (!CORE) {
+  throw new Error("VIT_CORE is missing. Ensure app-core.js is loaded before script.js.");
+}
 
-const STORAGE_KEYS = {
-  theme: "vit_theme",
-  language: "vit_language",
-  termsStatus: "vit_terms_status",
-  termsVersion: "vit_terms_version",
-  termsAgreedAt: "vit_terms_agreed_at"
-};
-
-const safeStorage = {
-  get(key, fallback = null) {
-    try {
-      const value = window.localStorage.getItem(key);
-      return value ?? fallback;
-    } catch {
-      return fallback;
-    }
-  },
-  set(key, value) {
-    try {
-      window.localStorage.setItem(key, value);
-    } catch {
-      // Ignore storage failures (private mode / disabled storage)
-    }
-  },
-  remove(key) {
-    try {
-      window.localStorage.removeItem(key);
-    } catch {
-      // Ignore storage failures (private mode / disabled storage)
-    }
-  }
-};
-
-const TERMS_STATUS = {
-  agreed: "agreed",
-  declined: "declined",
-  pending: "pending"
-};
+const { TERMS_VERSION, STORAGE_KEYS, TERMS_STATUS, safeStorage, debounce, getInitialTheme, getInitialLanguage, formatAgreementDate } = CORE;
 
 const VEHICLE_TYPES = [
   {
@@ -309,6 +275,8 @@ const readFullTermsBtn = document.getElementById("readFullTermsBtn");
 const declineTermsBtn = document.getElementById("declineTermsBtn");
 const agreeTermsBtn = document.getElementById("agreeTermsBtn");
 
+const termsInlineAlert = document.getElementById("termsInlineAlert");
+
 const textTargets = {
   eyebrowText: document.getElementById("eyebrowText"),
   mainTitle: document.getElementById("mainTitle"),
@@ -336,11 +304,8 @@ const textTargets = {
   creditPrefix: document.getElementById("creditPrefix")
 };
 
-const browserPrefersLight = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
-const browserPrefersKhmer = navigator.language && navigator.language.toLowerCase().startsWith("km");
-
-let currentTheme = safeStorage.get(STORAGE_KEYS.theme) || (browserPrefersLight ? "light" : "dark");
-let currentLanguage = safeStorage.get(STORAGE_KEYS.language) || (browserPrefersKhmer ? "km" : "en");
+let currentTheme = getInitialTheme();
+let currentLanguage = getInitialLanguage();
 let currentTermsStatus = TERMS_STATUS.pending;
 
 if (!["dark", "light"].includes(currentTheme)) {
@@ -408,30 +373,31 @@ function formatKHR(value) {
   return "KHR " + formatter.format(Math.round(value));
 }
 
-function formatAgreementDate(isoValue) {
-  if (!isoValue) {
-    return "-";
-  }
-
-  const parsedDate = new Date(isoValue);
-  if (Number.isNaN(parsedDate.getTime())) {
-    return "-";
-  }
-
-  const locale = currentLanguage === "km" ? "km-KH" : "en-GB";
-  return parsedDate.toLocaleString(locale, {
-    year: "numeric",
-    month: "short",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit"
-  });
-}
-
 function updateLiveConversion() {
   const cif = Number.parseFloat(cifUsdInput.value);
   const khrValue = Number.isFinite(cif) && cif >= 0 ? cif * EXCHANGE_RATE : 0;
   cifKhrLive.textContent = formatKHR(khrValue);
+}
+
+function showInlineAlert(message, variant = "warning") {
+  if (!termsInlineAlert) {
+    return;
+  }
+
+  const allowed = new Set(["warning", "danger", "info", "success", "secondary", "primary", "light", "dark"]);
+  const tone = allowed.has(variant) ? variant : "warning";
+
+  termsInlineAlert.className = `alert alert-${tone} mb-3`;
+  termsInlineAlert.textContent = message;
+  termsInlineAlert.classList.remove("d-none");
+}
+
+function hideInlineAlert() {
+  if (!termsInlineAlert) {
+    return;
+  }
+  termsInlineAlert.classList.add("d-none");
+  termsInlineAlert.textContent = "";
 }
 
 function updateRateBadge(vehicle) {
@@ -473,17 +439,37 @@ function populateVehicleTypes() {
 }
 
 function populateRateTable() {
-  rateTableBody.innerHTML = VEHICLE_TYPES.map((vehicle) => {
-    return `
-      <tr>
-        <td>${getVehicleLabel(vehicle)}</td>
-        <td>${vehicle.hs}</td>
-        <td class="text-end">${vehicle.cd}%</td>
-        <td class="text-end">${vehicle.st}%</td>
-        <td class="text-end">${vehicle.vat}%</td>
-      </tr>
-    `;
-  }).join("");
+  const fragment = document.createDocumentFragment();
+  VEHICLE_TYPES.forEach((vehicle) => {
+    const tr = document.createElement("tr");
+
+    const tdType = document.createElement("td");
+    tdType.textContent = getVehicleLabel(vehicle);
+    tr.append(tdType);
+
+    const tdHs = document.createElement("td");
+    tdHs.textContent = vehicle.hs;
+    tr.append(tdHs);
+
+    const tdCd = document.createElement("td");
+    tdCd.className = "text-end";
+    tdCd.textContent = `${vehicle.cd}%`;
+    tr.append(tdCd);
+
+    const tdSt = document.createElement("td");
+    tdSt.className = "text-end";
+    tdSt.textContent = `${vehicle.st}%`;
+    tr.append(tdSt);
+
+    const tdVat = document.createElement("td");
+    tdVat.className = "text-end";
+    tdVat.textContent = `${vehicle.vat}%`;
+    tr.append(tdVat);
+
+    fragment.append(tr);
+  });
+
+  rateTableBody.replaceChildren(fragment);
 }
 
 function computeTax(cif, rates) {
@@ -515,6 +501,7 @@ function renderResults(vehicleIndex, data) {
   }
 
   updateRateBadge(vehicle);
+  hideInlineAlert();
 
   const rows = [
     { label: t("resultCif"), usd: data.cif },
@@ -527,22 +514,47 @@ function renderResults(vehicleIndex, data) {
     { label: t("resultLandedCost"), usd: data.landedCost, emphasis: true }
   ];
 
-  resultRows.innerHTML = rows.map((row) => {
-    const rowClass = row.emphasis ? "emphasis-row" : "";
-    return `
-      <tr class="${rowClass}">
-        <td>${row.label}</td>
-        <td class="text-end">${formatUSD(row.usd)}</td>
-        <td class="text-end">${formatKHR(row.usd * EXCHANGE_RATE)}</td>
-      </tr>
-    `;
-  }).join("");
+  const fragment = document.createDocumentFragment();
+  rows.forEach((row) => {
+    const tr = document.createElement("tr");
+    if (row.emphasis) {
+      tr.className = "emphasis-row";
+    }
+
+    const tdLabel = document.createElement("td");
+    tdLabel.textContent = row.label;
+    tr.append(tdLabel);
+
+    const tdUsd = document.createElement("td");
+    tdUsd.className = "text-end";
+    tdUsd.textContent = formatUSD(row.usd);
+    tr.append(tdUsd);
+
+    const tdKhr = document.createElement("td");
+    tdKhr.className = "text-end";
+    tdKhr.textContent = formatKHR(row.usd * EXCHANGE_RATE);
+    tr.append(tdKhr);
+
+    fragment.append(tr);
+  });
+
+  resultRows.replaceChildren(fragment);
 
   if (!isTermsAccepted()) {
     return;
   }
 
   resultCard.classList.remove("d-none");
+}
+
+const tooltipInstances = new Map();
+
+function initializeTooltips() {
+  const tooltipTargets = document.querySelectorAll("[data-tooltip-key]");
+  tooltipTargets.forEach((el) => {
+    const tooltip = new bootstrap.Tooltip(el);
+    tooltipInstances.set(el, tooltip);
+  });
 }
 
 function refreshTooltips() {
@@ -552,14 +564,13 @@ function refreshTooltips() {
     const key = el.getAttribute("data-tooltip-key");
     const translatedText = t(key);
 
-    const existingTooltip = bootstrap.Tooltip.getInstance(el);
-    if (existingTooltip) {
-      existingTooltip.dispose();
-    }
-
     el.setAttribute("title", translatedText);
     el.setAttribute("data-bs-title", translatedText);
-    new bootstrap.Tooltip(el);
+
+    const instance = tooltipInstances.get(el) || bootstrap.Tooltip.getInstance(el);
+    if (instance && typeof instance.setContent === "function") {
+      instance.setContent({ ".tooltip-inner": translatedText });
+    }
   });
 }
 
@@ -584,7 +595,7 @@ function updateTermsStatusUI() {
     termsStatusCard.classList.add("agreed");
     termsStatusIcon.className = "fa-solid fa-circle-check";
     termsStatusText.textContent = t("termsStatusAgreed", {
-      date: formatAgreementDate(agreedAt)
+      date: formatAgreementDate(agreedAt, currentLanguage)
     });
   } else if (currentTermsStatus === TERMS_STATUS.declined) {
     termsStatusCard.classList.add("declined");
@@ -736,7 +747,22 @@ function initializeTermsState() {
 
 function initialize() {
   applyLanguage(currentLanguage);
+  initializeTooltips();
+  refreshTooltips();
   initializeTermsState();
+
+  const storedVehicleIndex = safeStorage.get(STORAGE_KEYS.lastVehicleType, "");
+  if (storedVehicleIndex !== "" && vehicleTypeSelect) {
+    vehicleTypeSelect.value = storedVehicleIndex;
+    const vehicleIndex = Number.parseInt(vehicleTypeSelect.value, 10);
+    updateRateBadge(Number.isFinite(vehicleIndex) ? VEHICLE_TYPES[vehicleIndex] : null);
+  }
+
+  const storedCifUsd = safeStorage.get(STORAGE_KEYS.lastCifUsd, "");
+  if (storedCifUsd !== "" && cifUsdInput) {
+    cifUsdInput.value = storedCifUsd;
+    updateLiveConversion();
+  }
 }
 
 themeToggleBtn.addEventListener("click", () => {
@@ -758,13 +784,25 @@ vehicleTypeSelect.addEventListener("change", () => {
   const vehicleIndex = Number.parseInt(vehicleTypeSelect.value, 10);
   if (Number.isFinite(vehicleIndex) && VEHICLE_TYPES[vehicleIndex]) {
     updateRateBadge(VEHICLE_TYPES[vehicleIndex]);
+    safeStorage.set(STORAGE_KEYS.lastVehicleType, String(vehicleIndex));
   } else {
     updateRateBadge(null);
+    safeStorage.remove(STORAGE_KEYS.lastVehicleType);
   }
 });
 
-cifUsdInput.addEventListener("input", () => {
+const debouncedLiveConversion = debounce(() => {
   updateLiveConversion();
+}, 80);
+
+cifUsdInput.addEventListener("input", () => {
+  debouncedLiveConversion();
+  const raw = cifUsdInput.value;
+  if (raw === "") {
+    safeStorage.remove(STORAGE_KEYS.lastCifUsd);
+  } else {
+    safeStorage.set(STORAGE_KEYS.lastCifUsd, raw);
+  }
 });
 
 reviewTermsBtn.addEventListener("click", () => {
@@ -803,7 +841,7 @@ taxForm.addEventListener("submit", (event) => {
   if (!isTermsAccepted()) {
     updateAccessState();
     showTermsModal();
-    window.alert(t("termsRequiredAlert"));
+    showInlineAlert(t("termsRequiredAlert"), "warning");
     return;
   }
 

@@ -1,45 +1,11 @@
 "use strict";
 
-const TERMS_VERSION = "2026-04-11-v1";
+const CORE = window.VIT_CORE;
+if (!CORE) {
+  throw new Error("VIT_CORE is missing. Ensure app-core.js is loaded before terms.js.");
+}
 
-const STORAGE_KEYS = {
-  theme: "vit_theme",
-  language: "vit_language",
-  termsStatus: "vit_terms_status",
-  termsVersion: "vit_terms_version",
-  termsAgreedAt: "vit_terms_agreed_at"
-};
-
-const TERMS_STATUS = {
-  agreed: "agreed",
-  declined: "declined",
-  pending: "pending"
-};
-
-const safeStorage = {
-  get(key, fallback = null) {
-    try {
-      const value = window.localStorage.getItem(key);
-      return value ?? fallback;
-    } catch {
-      return fallback;
-    }
-  },
-  set(key, value) {
-    try {
-      window.localStorage.setItem(key, value);
-    } catch {
-      // Ignore storage failures (private mode / disabled storage)
-    }
-  },
-  remove(key) {
-    try {
-      window.localStorage.removeItem(key);
-    } catch {
-      // Ignore storage failures (private mode / disabled storage)
-    }
-  }
-};
+const { TERMS_VERSION, STORAGE_KEYS, TERMS_STATUS, safeStorage, getInitialTheme, getInitialLanguage } = CORE;
 
 const TRANSLATIONS = {
   en: {
@@ -107,11 +73,8 @@ const elements = {
   termsReturnHint: document.getElementById("termsReturnHint")
 };
 
-const browserPrefersLight = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
-const browserPrefersKhmer = navigator.language && navigator.language.toLowerCase().startsWith("km");
-
-let currentTheme = safeStorage.get(STORAGE_KEYS.theme) || (browserPrefersLight ? "light" : "dark");
-let currentLanguage = safeStorage.get(STORAGE_KEYS.language) || (browserPrefersKhmer ? "km" : "en");
+let currentTheme = getInitialTheme();
+let currentLanguage = getInitialLanguage();
 
 if (!["dark", "light"].includes(currentTheme)) {
   currentTheme = "dark";

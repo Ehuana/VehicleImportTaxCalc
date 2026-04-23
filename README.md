@@ -31,7 +31,7 @@ Unofficial bilingual web app (EN/KM) for estimating Cambodia vehicle import taxe
 > [!IMPORTANT]
 > This is an unofficial community tool and not an official Cambodia Customs system.
 
-This calculator is designed to help users estimate import taxes for vehicle categories using the 2026 rule set implemented in the project logic.
+This calculator helps users estimate import taxes for common vehicle categories using the **2026** rule set implemented in the project logic. It runs fully client-side (static HTML/CSS/JS) and supports **English + Khmer**, **dark/light theme**, and a **terms consent gate** before use.
 
 ## Feature Matrix
 
@@ -50,10 +50,12 @@ This calculator is designed to help users estimate import taxes for vehicle cate
 
 ```mermaid
 flowchart TD
-	A[index.html] --> B[script.js]
+	A[index.html] --> H[app-core.js]
+	H --> B[script.js]
 	A --> C[style.css]
 	A --> D[Bootstrap + Font Awesome + Google Fonts]
-	E[terms.html] --> F[terms.js]
+	E[terms.html] --> H
+	E --> F[terms.js]
 	E --> C
 	B --> G[localStorage]
 	F --> G
@@ -108,7 +110,8 @@ No build step is required.
 | File | Responsibility |
 |---|---|
 | [index.html](index.html) | Main calculator UI + modal shells |
-| [script.js](script.js) | Calculator logic, i18n, theme, terms gating |
+| [app-core.js](app-core.js) | Shared core utilities (storage, defaults, debounce, constants) |
+| [script.js](script.js) | Calculator logic, i18n, theme, tooltips, terms gating |
 | [style.css](style.css) | All visual styling (glass UI, themes, responsive rules) |
 | [terms.html](terms.html) | Terms content page |
 | [terms.js](terms.js) | Terms page behavior + consent persistence |
@@ -116,7 +119,8 @@ No build step is required.
 
 ## Security and Hardening
 
-- CSP and Referrer-Policy meta headers configured in HTML pages.
+- CSP and Referrer-Policy meta headers configured in HTML pages (with a stricter CSP that avoids inline `<style>` blocks).
+- Subresource Integrity (SRI) added for the Font Awesome CDN stylesheet.
 - Sanitized terms return target (`from` query parameter) in terms flow.
 - Defensive localStorage wrappers for restricted/private browser modes.
 - `noopener noreferrer` on external links.
