@@ -351,6 +351,14 @@ h5 {
   transition: border-color 0.3s ease, transform 0.3s ease;
 }
 
+@media (max-width: 768px) {
+  .glass-card,
+  .terms-modal .modal-content {
+    backdrop-filter: blur(12px) saturate(135%);
+    -webkit-backdrop-filter: blur(12px) saturate(135%);
+  }
+}
+
 body.terms-locked .requires-terms {
   opacity: 0.38;
   pointer-events: none;
@@ -475,6 +483,46 @@ body.terms-locked #resultCard {
   color: var(--label-text);
   font-weight: 600;
   margin-bottom: 0.5rem;
+}
+
+.calculation-mode {
+  border: 0;
+  padding: 0;
+}
+
+.calculation-mode legend {
+  float: none;
+  width: auto;
+}
+
+.mode-switch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.mode-option {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-height: 3rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--outline-border);
+  border-radius: 0.9rem;
+  color: var(--text-muted);
+  background: var(--outline-bg);
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.mode-option:has(input:checked) {
+  color: var(--text-main);
+  border-color: var(--warm-gold);
+  background: var(--terms-pending-bg);
+}
+
+.mode-option input {
+  accent-color: var(--warm-gold);
 }
 
 .info-icon {
@@ -653,6 +701,16 @@ body.terms-locked #resultCard {
   border-top: 1px solid var(--emphasis-border);
 }
 
+.result-table .input-row td {
+  color: var(--text-muted);
+  font-weight: 600;
+  border-bottom: 1px solid var(--table-border);
+}
+
+.result-table .primary-result-row td {
+  font-size: 1.06em;
+}
+
 .formula-note {
   color: var(--text-muted);
   font-size: 0.83rem;
@@ -742,6 +800,14 @@ body.lang-km .eyebrow {
 }
 
 @media (max-width: 576px) {
+  .mode-switch {
+    grid-template-columns: 1fr;
+  }
+
+  .mode-option {
+    min-height: 2.75rem;
+  }
+
   h1 {
     font-size: 1.65rem;
   }

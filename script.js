@@ -112,6 +112,9 @@ const TRANSLATIONS = {
     switchToDark: "Switch to dark mode",
     switchToLight: "Switch to light mode",
     language: "Language",
+    calculationMode: "Calculation Mode",
+    forwardMode: "Calculate from CIF",
+    reverseMode: "Reverse from Total Landed Cost",
     vehicleType: "Vehicle Type",
     vehicleTooltip: "Select the category of imported vehicle. The HS code and tax rates are applied automatically.",
     chooseVehicle: "Choose vehicle type",
@@ -119,6 +122,12 @@ const TRANSLATIONS = {
     cifValue: "CIF Value (USD)",
     cifTooltip: "CIF means Cost, Insurance, and Freight. Enter the declared import value in USD.",
     cifPlaceholder: "e.g. 25000",
+    landedCostLabel: "Total Landed Cost (USD)",
+    landedCostTooltip: "Enter the full landed cost, including CIF and all estimated taxes, to estimate the original CIF value.",
+    landedCostPlaceholder: "e.g. 40000",
+    reverseModeHelp: "Enter the full landed cost to estimate the CIF value using the selected vehicle rates.",
+    clearForm: "Clear",
+    reverseResultNote: "Reverse estimate: CIF is calculated from the entered Total Landed Cost using the selected cascading tax rates.",
     invalidCif: "Please enter a valid CIF amount greater than zero.",
     liveConversionLabel: "Live conversion at 1 USD = 4,000 KHR:",
     calculateTax: "Calculate Tax",
@@ -127,6 +136,7 @@ const TRANSLATIONS = {
     usdHeader: "USD",
     khrHeader: "KHR",
     formulaNote: "Formula: CD = CIF x CD%, ST = (CIF + CD) x ST%, VAT = (CIF + CD + ST) x VAT%.",
+    reverseFormulaNote: "Reverse formula: CIF = Total Landed Cost divided by the combined CIF-to-landed-cost multiplier.",
     referenceTitle: "Full Tax Rate Reference (2026)",
     toggleTable: "Show or Hide Table",
     tableVehicleType: "Vehicle Type",
@@ -146,6 +156,8 @@ const TRANSLATIONS = {
     resultVat: "VAT ({rate}%)",
     resultTotalTax: "Total Tax",
     resultLandedCost: "Total Landed Cost",
+    resultEnteredLandedCost: "Total Landed Cost (Entered)",
+    resultEstimatedCif: "Estimated CIF Value",
     termsStatusTitle: "Terms of Use",
     termsStatusPending: "Not agreed yet.",
     termsStatusAgreed: "Agreed on {date}. You can use the calculator.",
@@ -178,6 +190,9 @@ const TRANSLATIONS = {
     switchToDark: "ប្តូរទៅម៉ូតងងឹត",
     switchToLight: "ប្តូរទៅម៉ូតភ្លឺ",
     language: "ភាសា",
+    calculationMode: "របៀបគណនា",
+    forwardMode: "គណនាពី CIF",
+    reverseMode: "បញ្ច្រាសពីថ្លៃចូលទីផ្សារសរុប",
     vehicleType: "ប្រភេទយានយន្ត",
     vehicleTooltip: "ជ្រើសប្រភេទយានយន្តដែលនាំចូល។ កូដ HS និងអត្រាពន្ធនឹងត្រូវអនុវត្តដោយស្វ័យប្រវត្តិ។",
     chooseVehicle: "ជ្រើសប្រភេទយានយន្ត",
@@ -185,6 +200,12 @@ const TRANSLATIONS = {
     cifValue: "តម្លៃ CIF (USD)",
     cifTooltip: "CIF មានន័យថា តម្លៃទំនិញ + ធានារ៉ាប់រង + ថ្លៃដឹកជញ្ជូន។ សូមបញ្ចូលតម្លៃជាដុល្លារ។",
     cifPlaceholder: "ឧ. 25000",
+    landedCostLabel: "ថ្លៃចូលទីផ្សារសរុប (USD)",
+    landedCostTooltip: "បញ្ចូលថ្លៃចូលទីផ្សារសរុប ដើម្បីប៉ាន់ស្មានតម្លៃ CIF ដើម។",
+    landedCostPlaceholder: "ឧ. 40000",
+    reverseModeHelp: "បញ្ចូលថ្លៃចូលទីផ្សារសរុប ដើម្បីប៉ាន់ស្មានតម្លៃ CIF ដោយប្រើអត្រាពន្ធរបស់យានយន្តដែលបានជ្រើសរើស។",
+    clearForm: "សម្អាត",
+    reverseResultNote: "ការប៉ាន់ស្មានបញ្ច្រាស៖ CIF ត្រូវបានគណនាពីថ្លៃចូលទីផ្សារសរុប ដោយប្រើអត្រាពន្ធដែលបានជ្រើសរើស។",
     invalidCif: "សូមបញ្ចូលតម្លៃ CIF ត្រឹមត្រូវ និងធំជាងសូន្យ។",
     liveConversionLabel: "អត្រាប្ដូរប្រាក់បច្ចុប្បន្ន 1 USD = 4,000 KHR៖",
     calculateTax: "គណនាពន្ធ",
@@ -193,6 +214,7 @@ const TRANSLATIONS = {
     usdHeader: "USD",
     khrHeader: "KHR",
     formulaNote: "រូបមន្ត៖ CD = CIF x CD%, ST = (CIF + CD) x ST%, VAT = (CIF + CD + ST) x VAT%។",
+    reverseFormulaNote: "រូបមន្តបញ្ច្រាស៖ CIF = ថ្លៃចូលទីផ្សារសរុប ចែកនឹងមេគុណសរុបពី CIF ទៅថ្លៃចូលទីផ្សារ។",
     referenceTitle: "តារាងយោងអត្រាពន្ធពេញលេញ (២០២៦)",
     toggleTable: "បង្ហាញ ឬ លាក់ តារាង",
     tableVehicleType: "ប្រភេទយានយន្ត",
@@ -276,6 +298,14 @@ const declineTermsBtn = document.getElementById("declineTermsBtn");
 const agreeTermsBtn = document.getElementById("agreeTermsBtn");
 
 const termsInlineAlert = document.getElementById("termsInlineAlert");
+const forwardMode = document.getElementById("forwardMode");
+const reverseMode = document.getElementById("reverseMode");
+const calculationModeLabel = document.getElementById("calculationModeLabel");
+const forwardModeText = document.getElementById("forwardModeText");
+const reverseModeText = document.getElementById("reverseModeText");
+const modeHelpText = document.getElementById("modeHelpText");
+const clearFormBtn = document.getElementById("clearFormBtn");
+const reverseResultNote = document.getElementById("reverseResultNote");
 
 const textTargets = {
   eyebrowText: document.getElementById("eyebrowText"),
@@ -307,6 +337,7 @@ const textTargets = {
 let currentTheme = getInitialTheme();
 let currentLanguage = getInitialLanguage();
 let currentTermsStatus = TERMS_STATUS.pending;
+let calculationMode = safeStorage.get(STORAGE_KEYS.calculationMode, "forward") === "reverse" ? "reverse" : "forward";
 
 if (!["dark", "light"].includes(currentTheme)) {
   currentTheme = "dark";
@@ -377,6 +408,25 @@ function updateLiveConversion() {
   const cif = Number.parseFloat(cifUsdInput.value);
   const khrValue = Number.isFinite(cif) && cif >= 0 ? cif * EXCHANGE_RATE : 0;
   cifKhrLive.textContent = formatKHR(khrValue);
+}
+
+function isReverseMode() {
+  return calculationMode === "reverse";
+}
+
+function updateCalculationModeUI() {
+  const reverse = isReverseMode();
+  const labelKey = reverse ? "landedCostLabel" : "cifValue";
+  const tooltipKey = reverse ? "landedCostTooltip" : "cifTooltip";
+
+  textTargets.cifValueLabel.textContent = t(labelKey);
+  const infoIcon = textTargets.cifValueLabel.parentElement.querySelector(".info-icon");
+  infoIcon.setAttribute("data-tooltip-key", tooltipKey);
+  infoIcon.setAttribute("title", t(tooltipKey));
+  cifUsdInput.placeholder = t(reverse ? "landedCostPlaceholder" : "cifPlaceholder");
+  modeHelpText.textContent = t(reverse ? "reverseModeHelp" : "cifTooltip");
+  forwardMode.checked = !reverse;
+  reverseMode.checked = reverse;
 }
 
 function showInlineAlert(message, variant = "warning") {
@@ -493,6 +543,14 @@ function computeTax(cif, rates) {
   };
 }
 
+function computeCifFromLandedCost(landedCost, rates) {
+  const cdRate = rates.cd / 100;
+  const stRate = rates.st / 100;
+  const vatRate = rates.vat / 100;
+  const multiplier = 1 + cdRate + ((1 + cdRate) * stRate) + ((1 + cdRate) * (1 + stRate) * vatRate);
+  return landedCost / multiplier;
+}
+
 function renderResults(vehicleIndex, data) {
   const vehicle = VEHICLE_TYPES[vehicleIndex];
 
@@ -503,22 +561,39 @@ function renderResults(vehicleIndex, data) {
   updateRateBadge(vehicle);
   hideInlineAlert();
 
-  const rows = [
-    { label: t("resultCif"), usd: data.cif },
-    { label: t("resultCustomsDuty", { rate: vehicle.cd }), usd: data.customsDuty },
-    { label: t("resultSpecialTaxBase"), usd: data.specialTaxBase },
-    { label: t("resultSpecialTax", { rate: vehicle.st }), usd: data.specialTax },
-    { label: t("resultVatBase"), usd: data.vatBase },
-    { label: t("resultVat", { rate: vehicle.vat }), usd: data.vat },
-    { label: t("resultTotalTax"), usd: data.totalTax, emphasis: true },
-    { label: t("resultLandedCost"), usd: data.landedCost, emphasis: true }
-  ];
+  const rows = isReverseMode()
+    ? [
+      { label: t("resultEnteredLandedCost"), usd: data.landedCost, input: true },
+      { label: t("resultCustomsDuty", { rate: vehicle.cd }), usd: data.customsDuty },
+      { label: t("resultSpecialTaxBase"), usd: data.specialTaxBase },
+      { label: t("resultSpecialTax", { rate: vehicle.st }), usd: data.specialTax },
+      { label: t("resultVatBase"), usd: data.vatBase },
+      { label: t("resultVat", { rate: vehicle.vat }), usd: data.vat },
+      { label: t("resultTotalTax"), usd: data.totalTax, emphasis: true },
+      { label: t("resultEstimatedCif"), usd: data.cif, emphasis: true, result: true }
+    ]
+    : [
+      { label: t("resultCif"), usd: data.cif },
+      { label: t("resultCustomsDuty", { rate: vehicle.cd }), usd: data.customsDuty },
+      { label: t("resultSpecialTaxBase"), usd: data.specialTaxBase },
+      { label: t("resultSpecialTax", { rate: vehicle.st }), usd: data.specialTax },
+      { label: t("resultVatBase"), usd: data.vatBase },
+      { label: t("resultVat", { rate: vehicle.vat }), usd: data.vat },
+      { label: t("resultTotalTax"), usd: data.totalTax, emphasis: true },
+      { label: t("resultLandedCost"), usd: data.landedCost, emphasis: true }
+    ];
 
   const fragment = document.createDocumentFragment();
   rows.forEach((row) => {
     const tr = document.createElement("tr");
     if (row.emphasis) {
       tr.className = "emphasis-row";
+    }
+    if (row.input) {
+      tr.classList.add("input-row");
+    }
+    if (row.result) {
+      tr.classList.add("primary-result-row");
     }
 
     const tdLabel = document.createElement("td");
@@ -539,6 +614,7 @@ function renderResults(vehicleIndex, data) {
   });
 
   resultRows.replaceChildren(fragment);
+  reverseResultNote.textContent = isReverseMode() ? `${t("reverseResultNote")} ${t("reverseFormulaNote")}` : "";
 
   if (!isTermsAccepted()) {
     return;
@@ -668,6 +744,9 @@ function applyTextTranslations() {
   textTargets.mainTitle.textContent = t("mainTitle");
   textTargets.subtitleText.textContent = t("subtitle");
   textTargets.languageLabel.textContent = t("language");
+  calculationModeLabel.textContent = t("calculationMode");
+  forwardModeText.textContent = t("forwardMode");
+  reverseModeText.textContent = t("reverseMode");
   textTargets.vehicleTypeLabel.textContent = t("vehicleType");
   textTargets.vehicleInvalidMsg.textContent = t("invalidVehicle");
   textTargets.cifValueLabel.textContent = t("cifValue");
@@ -702,7 +781,8 @@ function applyTextTranslations() {
   declineTermsBtn.textContent = t("termsDeclineButton");
   agreeTermsBtn.textContent = t("termsAgreeButton");
 
-  cifUsdInput.placeholder = t("cifPlaceholder");
+  clearFormBtn.textContent = t("clearForm");
+  updateCalculationModeUI();
 
   const termsPageTarget = encodeURIComponent("index.html");
   viewTermsLink.setAttribute("href", `terms.html?from=${termsPageTarget}`);
@@ -763,6 +843,7 @@ function initialize() {
     cifUsdInput.value = storedCifUsd;
     updateLiveConversion();
   }
+  updateCalculationModeUI();
 }
 
 themeToggleBtn.addEventListener("click", () => {
@@ -794,6 +875,9 @@ vehicleTypeSelect.addEventListener("change", () => {
 const debouncedLiveConversion = debounce(() => {
   updateLiveConversion();
 }, 80);
+const debouncedSaveAmount = debounce((value) => {
+  safeStorage.set(STORAGE_KEYS.lastCifUsd, value);
+}, 180);
 
 cifUsdInput.addEventListener("input", () => {
   debouncedLiveConversion();
@@ -801,8 +885,34 @@ cifUsdInput.addEventListener("input", () => {
   if (raw === "") {
     safeStorage.remove(STORAGE_KEYS.lastCifUsd);
   } else {
-    safeStorage.set(STORAGE_KEYS.lastCifUsd, raw);
+    debouncedSaveAmount(raw);
   }
+});
+
+function setCalculationMode(nextMode) {
+  calculationMode = nextMode === "reverse" ? "reverse" : "forward";
+  safeStorage.set(STORAGE_KEYS.calculationMode, calculationMode);
+  updateCalculationModeUI();
+  lastResult = null;
+  resultCard.classList.add("d-none");
+  taxForm.classList.remove("was-validated");
+}
+
+forwardMode.addEventListener("change", () => setCalculationMode("forward"));
+reverseMode.addEventListener("change", () => setCalculationMode("reverse"));
+
+clearFormBtn.addEventListener("click", () => {
+  cifUsdInput.value = "";
+  vehicleTypeSelect.value = "";
+  debouncedSaveAmount.cancel();
+  safeStorage.remove(STORAGE_KEYS.lastCifUsd);
+  safeStorage.remove(STORAGE_KEYS.lastVehicleType);
+  lastResult = null;
+  resultCard.classList.add("d-none");
+  taxForm.classList.remove("was-validated");
+  hideInlineAlert();
+  updateRateBadge(null);
+  updateLiveConversion();
 });
 
 reviewTermsBtn.addEventListener("click", () => {
@@ -851,14 +961,16 @@ taxForm.addEventListener("submit", (event) => {
   }
 
   const vehicleIndex = Number.parseInt(vehicleTypeSelect.value, 10);
-  const cifValue = Number.parseFloat(cifUsdInput.value);
+  const inputValue = Number.parseFloat(cifUsdInput.value);
 
-  if (!Number.isFinite(vehicleIndex) || !VEHICLE_TYPES[vehicleIndex] || !Number.isFinite(cifValue) || cifValue <= 0) {
+  if (!Number.isFinite(vehicleIndex) || !VEHICLE_TYPES[vehicleIndex] || !Number.isFinite(inputValue) || inputValue <= 0) {
     taxForm.classList.add("was-validated");
     return;
   }
 
-  const taxData = computeTax(cifValue, VEHICLE_TYPES[vehicleIndex]);
+  const rates = VEHICLE_TYPES[vehicleIndex];
+  const cifValue = isReverseMode() ? computeCifFromLandedCost(inputValue, rates) : inputValue;
+  const taxData = computeTax(cifValue, rates);
   lastResult = {
     vehicleIndex,
     data: taxData

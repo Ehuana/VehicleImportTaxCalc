@@ -9,6 +9,7 @@
     language: "vit_language",
     lastVehicleType: "vit_last_vehicle_type",
     lastCifUsd: "vit_last_cif_usd",
+    calculationMode: "vit_calculation_mode",
     termsStatus: "vit_terms_status",
     termsVersion: "vit_terms_version",
     termsAgreedAt: "vit_terms_agreed_at"
@@ -47,7 +48,7 @@
 
   function debounce(fn, waitMs) {
     let timeoutId = null;
-    return (...args) => {
+    const debounced = (...args) => {
       if (timeoutId) {
         window.clearTimeout(timeoutId);
       }
@@ -56,6 +57,15 @@
         fn(...args);
       }, waitMs);
     };
+
+    debounced.cancel = () => {
+      if (timeoutId) {
+        window.clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+    };
+
+    return debounced;
   }
 
   function getBrowserPrefersLight() {

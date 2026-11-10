@@ -38,13 +38,14 @@ This calculator helps users estimate import taxes for common vehicle categories 
 | Area | What it includes |
 |---|---|
 | Tax engine | Cascading model: Customs Duty -> Special Tax -> VAT |
-| Inputs | Vehicle type + CIF amount (USD) |
+| Inputs | Vehicle type + CIF or Total Landed Cost amount (USD) |
 | Outputs | Full breakdown in USD and KHR |
 | Rates table | Collapsible reference table for vehicle classes |
 | Localization | English and Khmer UI switching |
 | Themes | Dark and Light mode |
 | Legal flow | Terms consent gate (agree required to use calculator) |
 | Terms page | Dedicated terms page with persisted decision state |
+| Calculation modes | Forward CIF calculation and reverse Total Landed Cost calculation |
 
 ## Architecture
 
@@ -78,6 +79,16 @@ flowchart TD
 
 > [!NOTE]
 > Currency conversion shown in app uses `1 USD = 4,000 KHR`.
+
+### Reverse Calculation
+
+Reverse mode estimates CIF from the entered Total Landed Cost using the selected vehicle's cascading rates. It assumes:
+
+```text
+Total Landed Cost = CIF + CD + ST + VAT
+```
+
+The result is an estimate only and may differ from official customs calculations, rounding policies, or additional fees.
 
 <details>
 <summary><strong>Vehicle classes and rates currently encoded</strong></summary>
@@ -125,6 +136,7 @@ No build step is required.
 - Defensive localStorage wrappers for restricted/private browser modes.
 - `noopener noreferrer` on external links.
 - Reduced-motion fallback for animation-sensitive users.
+- Reverse-calculation assumptions are disclosed in the interface and terms.
 
 ## Release Checklist
 

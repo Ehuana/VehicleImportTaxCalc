@@ -67,6 +67,19 @@
     <section class="glass-card p-3 p-md-4 mb-4 requires-terms" aria-label="Tax input form">
       <form id="taxForm" novalidate>
         <div id="termsInlineAlert" class="alert alert-warning d-none mb-3" role="alert"></div>
+        <fieldset class="calculation-mode mb-4">
+          <legend class="form-label mb-2" id="calculationModeLabel">Calculation Mode</legend>
+          <div class="mode-switch" role="radiogroup" aria-labelledby="calculationModeLabel">
+            <label class="mode-option" for="forwardMode">
+              <input type="radio" name="calculationMode" id="forwardMode" value="forward" checked>
+              <span id="forwardModeText">Calculate from CIF</span>
+            </label>
+            <label class="mode-option" for="reverseMode">
+              <input type="radio" name="calculationMode" id="reverseMode" value="reverse">
+              <span id="reverseModeText">Reverse from Total Landed Cost</span>
+            </label>
+          </div>
+        </fieldset>
         <div class="row g-3 g-md-4">
           <div class="col-12 col-lg-6">
             <label for="vehicleType" class="form-label d-inline-flex align-items-center gap-2">
@@ -96,14 +109,16 @@
               <span id="liveConversionLabel">Live conversion at 1 USD = 4,000 KHR:</span>
               <strong id="cifKhrLive">KHR 0</strong>
             </div>
+            <div class="conversion-note mt-1" id="modeHelpText"></div>
           </div>
         </div>
 
-        <div class="d-flex justify-content-center mt-4">
+        <div class="d-flex justify-content-center flex-wrap gap-2 mt-4">
           <button type="submit" class="btn btn-glass px-4 px-md-5">
             <i class="fa-solid fa-calculator me-2"></i>
             <span id="calculateTaxText">Calculate Tax</span>
           </button>
+          <button type="button" id="clearFormBtn" class="btn btn-outline-glass px-4">Clear</button>
         </div>
       </form>
     </section>
@@ -127,9 +142,10 @@
         </table>
       </div>
 
-      <p class="formula-note mb-0" id="formulaNote">
+      <p class="formula-note mb-2" id="formulaNote">
         Formula: CD = CIF x CD%, ST = (CIF + CD) x ST%, VAT = (CIF + CD + ST) x VAT%.
       </p>
+      <p class="formula-note mb-0" id="reverseResultNote"></p>
     </section>
 
     <section class="glass-card p-3 p-md-4 mb-4 requires-terms" aria-label="Tax rate reference table">
